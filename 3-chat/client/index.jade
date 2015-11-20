@@ -1,0 +1,12 @@
+html
+    head
+        title chat
+        link(rel='stylesheet', href='styles/main.css', charset='utf-8')
+    body
+        #header.header
+            #username.username
+            input#input.input(type='text')
+        #content.content
+        script(src='/socket.io/socket.io.js', charset='utf-8')
+        script(src='https://code.jquery.com/jquery-2.1.4.js')
+        script(src='scripts/app.js', charset='utf-8')
