@@ -10,9 +10,9 @@ Each folder contains a mini-project with it's own README which explains some of 
 Completed versions of each of the projects will be found on the `completed` branch if you just want to skip to a finished version and look at, or play with, the code.
 
 Project walkthroughs:
- - [0-hello](0-hello/readme.md)
- - [1-rename](1-rename/readme.md)
- - [2-ffi](2-ffi/readme.md)
- - [3-chat](3-chat/readme.md)
+ - [0-hello](0-hello/README.md)
+ - [1-rename](1-rename/README.md)
+ - [2-ffi](2-ffi/README.md)
+ - [3-chat](3-chat/README.md)
 
 ***Additional links with further information will be added soon :).***
