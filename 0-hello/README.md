@@ -3,7 +3,7 @@
 This example is the canonical node "hello world" exercise, and forms an introduction to some of the basic concepts for working with node.
 
 #### Install node
-The first thing to do is install node 4.x if you don't yet have it - get it [here](https://nodejs.org).
+The first thing to do is install node 4.x, if you don't yet have it, you can get it from [here](https://nodejs.org).
 
 #### Make an entry point
 The next thing is to make our entry point - `index.js` - this is the file we will run using node, and will be where all of the code goes in this simple example.
@@ -11,7 +11,7 @@ The next thing is to make our entry point - `index.js` - this is the file we wil
 #### Requiring modules
 So, we have an empty `index.js` file, now we need to write some code that makes it **do** something - the first step in that is almost always by `require`ing some modules which provide functionality we can use.
 
-In this case we require one of the many modules that is built-in to node, [`http`](https://nodejs.org/api/http.html), (see the rest [here](https://nodejs.org/api/)).
+In this case we require one of the many modules that are built-in to node, [`http`](https://nodejs.org/api/http.html), (see the rest [here](https://nodejs.org/api/)).
 ```js
 var http = require('http');
 ```
@@ -20,7 +20,7 @@ What `require` does is tells node to (*synchronously*) load the `http` module an
 > Later we'll go over how you do the opposite of `require`ing - `export`ing functionality for other files (or even packages) to use.
 
 #### Creating a server
-Now we have the `http` module loaded we can use it to make ourselves a basic web-server!
+Now we have the `http` module loaded, we can use it to make ourselves a basic web-server!
 ```js
 var http = require('http');
 
