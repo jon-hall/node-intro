@@ -68,4 +68,4 @@ To run the application you just have to enter (*in a command prompt*).
 ```sh
 node index.js
 ```
-It should then log out that it is listening (or any errors if something went wrong), and you can open http://localhost:3000/ to view the response it sends.
+It should then log out that it is listening (or any errors if something went wrong), and you can open [http://localhost:3000/](http://localhost:3000/) to view the response it sends.
