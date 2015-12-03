@@ -30,8 +30,7 @@ var rl = require('readline'),
 // overflows, but is used here for code clarity.
 function sendPrompt() {
     // We ask a question and receive the next entered line in a callback
-    prompt.question("Type 'freeze', 'defrost', 'target <window title>'" +
-        ", or 'exit':\n", function(answer) {
+    prompt.question("Type 'freeze <window title>', 'defrost', or 'exit':\n", function(answer) {
         switch(answer) {
             // We will add cases to deal with the various answers we accept
             default:
@@ -82,42 +81,37 @@ We'll now add some basic code for handling prompt answers.
 // We use the built-in 'readline' module for reading console input
 var rl = require('readline'),
     prompt = rl.createInterface(process.stdin, process.stdout, null),
-    targetRegex = /^target (\w+)/;
+    freezeRegex = /^freeze (\w+)/;
 
 // In order to loop call sto the async 'question' method, we use recursion as
 // a naive approach. This is not a sustainable strategy as it eventually stack
 // overflows, but is used here for code clarity.
 function sendPrompt() {
-    var match;
-
     // We ask a question and receive the next entered line in a callback
-    prompt.question("Type 'freeze', 'defrost', 'target <window title>'" +
-        ", or 'exit':\n", function(answer) {
+    prompt.question("Type 'freeze <window title>', 'defrost', or 'exit':\n", function(answer) {
+        var playOn = true;
         switch(answer) {
-            case 'freeze':
-                // TODO: Use SendMessage to stop all paints for window
-                // effectively rendering it non-interactable
-                sendPrompt();
-                break;
             case 'defrost':
-                // TODO: Re-nable paints on window so it goes back to normal
-                sendPrompt();
+                // TODO: Re-enable paints on window so it goes back to normal
                 break;
             case 'exit':
                 // These lines allow the program to terminate
                 // Without them, it would run forever
                 prompt.close();
                 process.stdin.destroy();
+                playOn = false;
                 break;
             default:
-                match = targetRegex.exec(answer);
-                if(match) {
-                    // TODO: Set new target window based on match[1]
+                freezing = freezeRegex.exec(answer);
+                if(freezing) {
+                    // TODO: Freeze target window based on match[1]
                 }
-
-                // Keep prompting til exit
-                sendPrompt();
                 break;
+        }
+
+        if(playOn) {
+            // Keep prompting til exit
+            sendPrompt();
         }
     });
 }
@@ -138,8 +132,7 @@ var rl = require('readline'),
     WM_SETREDRAW = 11,
     FALSE = 0,
     TRUE = 1,
-    targetRegex = /^target (\w+)/,
-    frozen = false,
+    freezeRegex = /^freeze (\w+)/,
     handle;
 
 // Get proxy functions for native WINAPI FindWindow and SendMessage functions
@@ -156,65 +149,54 @@ var winapi = new ffi.Library("User32", {
 // a naive approach. This is not a sustainable strategy as it eventually stack
 // overflows, but is used here for code clarity.
 function sendPrompt() {
-    var match;
-
     // We ask a question and receive the next entered line in a callback
-    prompt.question("Type 'freeze', 'defrost', 'target <window title>'" +
-        ", or 'exit':\n", function(answer) {
+    prompt.question("Type 'freeze <window title>', 'defrost', or 'exit':\n", function(answer) {
+        var playOn = true;
+
         switch(answer) {
-            case 'freeze':
-                // Use SendMessage to stop all paints for window
-                // effectively rendering it non-interactable
-                if(handle) {
-                    if(frozen) continue;
-
-                    // Invoking the registered methods is as simple as calling
-                    // them like any other javascript method
-
-                    // Disable drawing by sending SETDRAW message with FALSE
-                    winapi.SendMessageA(handle, WM_SETREDRAW, FALSE, 0);
-
-                    frozen = true;
-                } else {
-                    console.log("Please use 'target <window title>' before 'freeze'");
-                }
-                sendPrompt();
-                break;
             case 'defrost':
                 if(handle) {
-                    if(!frozen) continue;
-
                     // Re-enable drawing by sending SETDRAW with TRUE
                     winapi.SendMessageA(handle, WM_SETREDRAW, TRUE, 0);
-
-                    frozen = false;
+                    handle = null;
                 } else {
-                    console.log("Please use 'target <window title>' before 'defrost'");
+                    console.log("Please use 'freeze <window title>' before 'defrost'");
                 }
-                // TODO: Re-nable paints on window so it goes back to normal
-                sendPrompt();
                 break;
             case 'exit':
                 // These lines allow the program to terminate
                 // Without them, it would run forever
                 prompt.close();
                 process.stdin.destroy();
+                playOn = false;
                 break;
             default:
-                match = targetRegex.exec(answer);
+                match = freezeRegex.exec(answer);
                 if(match) {
-                    if(frozen) {
-                        console.log("Please 'defrost' before changing targets.");
-                    } else {
-                        // Call find window to get the handle based on title
-                        // Store in 'handle' for use in future answers
-                        handle = winapi.FindWindowA(null, match[1]);
+                    if(handle) {
+                        console.log("Already frozen, use 'defrost' to unfreeze target.");
+                        break;
                     }
-                }
 
-                // Keep prompting til exit
-                sendPrompt();
+                    // Call find window to get the handle based on title
+                    // Store in 'handle' for use in future answers
+
+                    // Invoking the registered methods is as simple as calling
+                    // them like any other javascript method
+                    handle = winapi.FindWindowA(null, match[1]);
+
+                    // Use SendMessage to stop all paints for the window,
+                    // effectively rendering it non-interactable
+
+                    // Disable drawing by sending SETDRAW message with FALSE
+                    winapi.SendMessageA(handle, WM_SETREDRAW, FALSE, 0);
+                }
                 break;
+        }
+
+        if(playOn) {
+            // Keep prompting til exit
+            sendPrompt();
         }
     });
 }
