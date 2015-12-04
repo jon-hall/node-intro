@@ -1,6 +1,6 @@
 ## 2 - ffi
 
-This example is included to show-off something that I thought was mind-blowing when I first discovered it - the ability to call native methods from javascript seamlessly using the excellent [node-ffi](https://github.com/node-ffi/node-ffi).
+This example is included to show-off something that I thought was mind-blowing when I first discovered it - the ability to call native methods from javascript seamlessly using the excellent [node-ffi](https://github.com/node-ffi/node-ffi) package.
 
 #### What it'll do
 
@@ -9,7 +9,7 @@ The app does a couple of things - it sets up a way to call some native Windows A
 #### Prerequisites
 In order to do this exercise you'll need to set your system up so [node-gyp](https://github.com/nodejs/node-gyp) works correctly, since this involves interfacing with native code (`node-gyp` is a tool which allows compiling C++ sources on a variety of platforms).
 
-In order to make sure the example will work on your system you need to follow the steps for installation in the `node-gyp` readme *(see link above)* - this mainly involves installing python and the VC++ compiler tools if you don't have them.
+In order to make sure the example will work on your system you need to follow the steps for installation in the `node-gyp` README *(see link above)* - this mainly involves installing python and the VC++ compiler tools if you don't have them.
 
 #### NPM install
 Once your machine is ready, you can run (from a prompt in the `2-ffi` directory)
@@ -25,14 +25,14 @@ The built-in API for reading input from the command-line is a tad clunky, but he
 var rl = require('readline'),
     prompt = rl.createInterface(process.stdin, process.stdout, null);
 
-// In order to loop call sto the async 'question' method, we use recursion as
+// In order to loop calls to the async 'question' method, we use recursion as
 // a naive approach. This is not a sustainable strategy as it eventually stack
 // overflows, but is used here for code clarity.
 function sendPrompt() {
     // We ask a question and receive the next entered line in a callback
     prompt.question("Type 'freeze <window title>', 'defrost', or 'exit':\n", function(answer) {
         switch(answer) {
-            // We will add cases to deal with the various answers we accept
+            // We will add cases to deal with the various answers later
             default:
                 // Keep prompting til exit
                 sendPrompt();
@@ -45,7 +45,7 @@ sendPrompt();
 ```
 
 #### Calling native methods
-Before we move onto dealing with the various answers to the prompt, we'll bring in `node-ffi` and set up our WinAPI method calls, ready to perform them in response to prompt answers.
+Before we move onto dealing with the answers to the prompt, we'll bring in `node-ffi` and set-up our WinAPI method calls, ready to perform them in response to prompt answers.
 
 The two methods we'll be needing are:
  - [FindWindow](https://msdn.microsoft.com/en-us/library/windows/desktop/ms633499.aspx) - which allows us to get a window's handle using it's title.
@@ -83,7 +83,7 @@ var rl = require('readline'),
     prompt = rl.createInterface(process.stdin, process.stdout, null),
     freezeRegex = /^freeze (\w+)/;
 
-// In order to loop call sto the async 'question' method, we use recursion as
+// In order to loop calls to the async 'question' method, we use recursion as
 // a naive approach. This is not a sustainable strategy as it eventually stack
 // overflows, but is used here for code clarity.
 function sendPrompt() {
@@ -145,7 +145,7 @@ var winapi = new ffi.Library("User32", {
     "SendMessageA": ["int64", ["int32", "uint32", "int32", "int32"]]
 });
 
-// In order to loop call sto the async 'question' method, we use recursion as
+// In order to loop calls to the async 'question' method, we use recursion as
 // a naive approach. This is not a sustainable strategy as it eventually stack
 // overflows, but is used here for code clarity.
 function sendPrompt() {
@@ -181,7 +181,7 @@ function sendPrompt() {
                     // Call find window to get the handle based on title
                     // Store in 'handle' for use in future answers
 
-                    // Invoking the registered methods is as simple as calling
+                    // Invoking the methods registered wif ffi is as simple as calling
                     // them like any other javascript method
                     handle = winapi.FindWindowA(null, match[1]);
 
