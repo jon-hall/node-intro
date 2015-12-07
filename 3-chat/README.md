@@ -192,10 +192,91 @@ gulp.task('styles', function() {
 ```
 We're done with the gulpfile for now, we'll see the finished product once we're able to deal with those `TODO`s a little later.
 
-#### Socket.io chat server
+#### Creating an express web server
+Our previous web server example was the ultra-basic 'hello world', which used only built-in modules to serve some plain test.  This time round we'll use [express](https://github.com/strongloop/express) to provide us a higher-level web server for serving some static content.
+
+The first step is to install `express` and save it as a *(production)* ***dependency*** (using `--save`)
+```sh
+npm install express --save
+```
+
+Then we make our `server/index.js` file
+```js
+var http = require('http'),
+    path = require('path'),
+    express = require('express');
+
+// This file exports a function which starts a server on the specified port
+module.exports = function(port) {
+    var app = express(),
+        // We use 'http' to create a server which calls our express app
+        // with each request
+        server = http.createServer(app);
+
+    // Make the server listen on the specified port
+    server.listen(port, function () {
+        console.log('Server listening at port %d', port);
+    });
+
+    // Use express to serve the files in '../dist'
+    app.use(express.static(path.resolve(__dirname, '../dist')));
+};
+```
+
+If you now make another file, `index.js`, and put this in it
+```js
+// Launch a server on port 3001
+require('./server/index')(3001);
+```
+You can run
+```sh
+node index.js
+```
+from command line and go to [http://localhost:3001](http://localhost:3001) to view the chat application (provided you ran `gulp` to build it).
+
+#### Adding websockets
+Currently, the application doesn't actually do anything, so lets install some packages that we can use to make a working chat app
+```sh
+npm install --save socket.io haikunator
+```
+
+We'll now update our app to include `socket.io`, which allows us to communicate with clients using websockets
+```js
+var http = require('http'),
+    path = require('path'),
+    express = require('express'),
+    socketio = require('socket.io'),
+    haikunate = require('haikunator');
+
+// This file exports a function which starts a server on the specified port
+module.exports = function(port) {
+    var app = express(),
+        // We use 'http' to create a server which calls our express app
+        // with each request
+        server = http.createServer(app),
+        // We can re-use the server to also receive websocket connections
+        // through it, using socket.io
+        io = socketio(server);
+
+    // Make the server listen on the specified port
+    server.listen(port, function () {
+        console.log('Server listening at port %d', port);
+    });
+
+    // Use express to serve the files in '../dist'
+    app.use(express.static(path.resolve(__dirname, '../dist')));
+
+    // Listen for websocket connections
+    io.on('connection', function (socket) {
+        // TODO: Do stuff with socket
+    });
+};
+```
+
+#### Making clients chat
 
 > TODO
 
-#### Gulp watch tasks
+#### Finishing off the gulpfile
 
 > TODO
