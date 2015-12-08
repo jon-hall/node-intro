@@ -137,7 +137,7 @@ gulp.task('clean', function() {
 });
 
 // The default task cleans THEN builds, the array syntax used for 'build'
-// runs tasks in parralel, so we use 'run-sequence' to make them sequential
+// runs tasks in parallel, so we use 'run-sequence' to make them sequential
 gulp.task('default', function(done) {
     runSequence('clean', 'build', done);
 });
@@ -158,7 +158,7 @@ var gulp = require('gulp'),
 
 // The array means 'build' runs before 'dev' starts
 gulp.task('dev', ['build'], function() {
-    // TODO: Launch server on 8111: "server({ port: 8111 });"
+    // TODO: Launch server on 8111: "server(8111);"
     // We init browser-sync to proxy our application
     browserSync.init({
         proxy: 8111
@@ -222,6 +222,7 @@ module.exports = function(port) {
     app.use(express.static(path.resolve(__dirname, '../dist')));
 };
 ```
+> TODO: module & exports
 
 If you now make another file, `index.js`, and put this in it
 ```js
@@ -274,9 +275,144 @@ module.exports = function(port) {
 ```
 
 #### Making clients chat
+Communicating between sockets is made simple with the use of `socket.io`s `rooms` feature
+```js
+var http = require('http'),
+    path = require('path'),
+    express = require('express'),
+    socketio = require('socket.io'),
+    haikunate = require('haikunator');
 
-> TODO
+// This file exports a function which starts a server on the specified port
+module.exports = function(port) {
+    var app = express(),
+        // We use 'http' to create a server which calls our express app
+        // with each request
+        server = http.createServer(app),
+        // We can re-use the server to also receive websocket connections
+        // through it, using socket.io
+        io = socketio(server);
+
+    // Make the server listen on the specified port
+    server.listen(port, function () {
+        console.log('Server listening at port %d', port);
+    });
+
+    // Use express to serve the files in '../dist'
+    app.use(express.static(path.resolve(__dirname, '../dist')));
+
+    io.on('connection', function (socket) {
+        // First thing we do is generate a random username for all connections
+        var username = haikunate();
+
+        // Log that we got a new connection
+        console.log('Client connected (pid: %d)', process.pid);
+
+        // Make the connection join the 'main' room
+        socket.join('main');
+
+        // Tell the new client what their username is
+        socket.emit('username', username);
+
+        // Let everyone else in the room know a new user has joined
+        socket.to('main').emit('in', username);
+
+        // When we receive a message from this client
+        socket.on('msg', function (msg) {
+            // Echo it to everyone else in the 'main' room
+            socket.to('main').emit('msg', { username, msg });
+        });
+
+        // Finally, when this client disconnects
+        socket.on('disconnect', function () {
+            // Tell everyone still in the room about it
+            socket.to('main').emit('out', username);
+        });
+    });
+});
+```
 
 #### Finishing off the gulpfile
+We can now complete the gulpfile to launch our server for us as part of the `dev` task
+```js
+var gulp = require('gulp'),
+    stylus = require('gulp-stylus'),
+    jade = require('gulp-jade'),
+    runSequence = require('run-sequence'),
+    del = require('del'),
+    browserSync = require('browser-sync'),
+    server = require('./server/index');
 
-> TODO
+gulp.task('clean', function() {
+    return del('./dist/**/*'));
+});
+
+gulp.task('scripts', function() {
+    return gulp.src('./client/scripts/**/*.js', {
+            // Files will be copied to './dist' with their
+            // path relative to './client'
+            base: './client'
+        }).
+        pipe(gulp.dest('./dist'));
+});
+
+gulp.task('styles', function() {
+    return gulp.src('./client/styles/**/*.styl', {
+            base: './client'
+        }).
+        pipe(stylus()).
+        pipe(gulp.dest('./dist')).
+        // This line triggers css-injection if browser-sync is running
+        pipe(browserSync.stream());
+});
+
+gulp.task('views', function() {
+    return gulp.src('./client/**/*.jade', {
+            base: './client'
+        }).
+        pipe(jade()).
+        pipe(gulp.dest('./dist'));
+});
+
+// You can specify an array of tasks for a gulp task to run
+// In this case, 'build' runs our other three tasks
+gulp.task('build', ['scripts', 'styles', 'views']);
+
+// The array means 'build' runs before 'dev' starts
+gulp.task('dev', ['build'], function() {
+    // Launch our server on port 8111
+    server(8111);
+
+    // We init browser-sync to proxy our application
+    browserSync.init({
+        proxy: 8111
+    });
+
+    // Watch all files in 'client' ending with 'jade',
+    // and run 'views' when any of them change
+    gulp.watch('./client/**/*.jade', ['views']).
+        // We can also listen for 'change' and run a browser reload
+        on('change', browserSync.reload);
+
+    gulp.watch('./client/scripts/**/*.js', ['scripts']).
+        on('change', browserSync.reload);
+
+    // Styles are different in that we can update them without
+    // reloading the page, to do this we modify the task itself
+    gulp.watch('./client/styles/**/*.styl', ['styles']);
+});
+
+// The default task cleans THEN builds, the array syntax used for 'build'
+// runs tasks in parallel, so we use 'run-sequence' to make them sequential
+gulp.task('default', function(done) {
+    runSequence('clean', 'build', done);
+});
+```
+
+Running
+```sh
+gulp dev
+```
+and opening [http://localhost:3000](http://localhost:3000) (*browser-sync's proxy runs on port 3000*) should give you a working chat app - open up a couple of tabs and try chatting.
+
+If you change any of the source files in `/client`, you should see they get automatically rebuilt, and your browser refreshed, as required based on what changed
