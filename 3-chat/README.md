@@ -222,8 +222,30 @@ module.exports = function(port) {
     app.use(express.static(path.resolve(__dirname, '../dist')));
 };
 ```
-> TODO: module & exports
+This example introduced another one of the few global objects in node (a previously encountered one being `require`) - `module` - which can be used for exporting content from a file (*module*) using its `exports` property.
 
+The `exports` object is present in two forms - `module.exports` and also under the alias `exports`, which is a reference to `module.exports`.
+
+An example of importing and exporting between files
+```js
+// file1.js
+
+// Make sure we do 'exports =', else exports !== module.exports after
+// the assignment
+exports = module.exports = function() { return 'default export'; };
+
+exports.a = function() { return 'a'; };
+```
+
+```js
+// file2.js
+var f1 = require('./file1');
+
+f1(); // => default export
+f1.a(); // => a
+```
+
+##### Running the server
 If you now make another file, `index.js`, and put this in it
 ```js
 // Launch a server on port 3001
