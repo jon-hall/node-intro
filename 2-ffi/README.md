@@ -16,10 +16,10 @@ Once your machine is ready, you can run (from a prompt in the `2-ffi` directory)
 ```sh
 npm install
 ```
-This will read the `package.json` file present in the directory and install any necessary (non built-in) dependencies listed in the file - in this case `node-ffi`.
+This will read the [`package.json`](http://browsenpm.org/package.json) file present in the directory and [install](https://docs.npmjs.com/cli/install) any necessary (non built-in) dependencies listed in the file - in this case `node-ffi`.
 
 #### Creating a command-line prompt
-The built-in API for reading input from the command-line is a tad clunky, but here is how we set up a looping prompt with it.
+The [built-in API](https://nodejs.org/api/readline.html) for reading input from the command-line is a tad clunky, but here is how we set up a looping prompt with it.
 ```js
 // We use the built-in 'readline' module for reading console input
 var rl = require('readline'),

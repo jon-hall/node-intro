@@ -17,7 +17,7 @@ var http = require('http');
 ```
 What `require` does is tells node to (*synchronously*) load the `http` module and return it to us, so we can store it in the variable `http`.
 
-> Later we'll go over how you do the opposite of `require`ing - `export`ing functionality for other files (or even packages) to use.
+> Later we'll go over how you do the opposite of `require`ing - `export`ing functionality for other files (or even packages) to use.  You can also find a fairly thorough write-up of `require` and `module.exports` [here](http://openmymind.net/2012/2/3/Node-Require-and-Exports/).
 
 #### Creating a server
 Now we have the `http` module loaded, we can use it to make ourselves a basic web-server!
