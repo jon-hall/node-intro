@@ -2,19 +2,19 @@
 
 This final exercise puts several of the previous pieces together and goes back to the roots of using node as a web server while illustrating some more advanced concepts like how to use npm, and how a simple chat app can be easily put together using a library like socket.io.
 
-It also introduces a very common usage of node - that of a task runner - in the form of writing a simple gulpfile for the project, to transpile various static assets.
+It also introduces a very common usage of node - that of a task runner - in the form of writing a simple gulpfile for the project, to [transpile](https://en.wikipedia.org/wiki/Source-to-source_compiler) various static assets.
 
 #### Creating a node project from scratch
 This time around you'll be making a proper node app from scratch, the first thing to do is create an entry point for the app, so make a file called `index.js` in this folder.
 
-Now open a command prompt, in this folder, and initialise a new node project using.
+Now open a command prompt and initialise a new node project in this folder using [`npm init`](https://docs.npmjs.com/cli/init).
 ```sh
 npm init
 ```
 Take the default answer for each of the questions it asks you, and you'll find it makes you a `package.json` file in this folder, now we can start work on the gulpfile.
 
 #### Gulp and gulpfiles
-Gulp is a task runner that runs on node, you compose the build steps you need using plain javascript in a build file (known as a gulpfile) which is, by convention, called `gulpfile.js` and placed in the root directory of your project.
+Gulp is a task runner that runs on node (for more about gulp see [here](http://gulpjs.com/)), you compose the build steps you need using plain javascript in a build file (known as a gulpfile) which is, by convention, called `gulpfile.js` and placed in the root directory of your project.
 
 To start writing our gulpfile we need to do three things
  - Make a file called `gulpfile.js` in the `3-chat` directory
@@ -35,7 +35,9 @@ gulp.task('default', function() {
     console.log('Default task!');
 });
 ```
-To see it in action just run
+This introduces the important function `gulp.task`, which is used to declare tasks which can be invoked by name using the `gulp` command in a command prompt (in this case we created the special, *default* task which is invoked when you don't supply a task name to the `gulp` command).
+
+So, to see it in action, just run
 ```sh
 gulp
 ```
@@ -53,6 +55,9 @@ gulp.task('scripts', function() {
 
 /* Default task ignored for now */
 ```
+Here we see another key feature of gulp - that of a [*stream*](https://nodejs.org/api/stream.html) (specifically a [vinyl-fs](https://github.com/gulpjs/vinyl-fs) stream), created using `gulp.src` which is then `pipe`d through to an output, using `gulp.dest`.
+
+
 If you now run
 ```sh
 gulp scripts
@@ -76,9 +81,9 @@ gulp.task('scripts', function() {
 ```
 
 #### Transforming files
-Gulp can be used simply for copying files, but it is more comonly used for *transforming* them in some way - concatenating, minifying, transpiling, etc. - which is done using `pipe`.
+Gulp can be used simply for copying files, but it is more comonly used for *transforming* them in some way - concatenating, minifying, transpiling, etc. - which is done by `pipe`ing through plugins which transform the files along the way.
 
-We'll now make a task which reads `styl` files (*stylus* - a language which transpiles to *css*) and outputs plain old `css` files
+We'll now make a task which reads `styl` files (*stylus* - a language which transpiles to *css*) and outputs plain old `css` files, by `pipe`ing through the [`gulp-stylus`](https://github.com/stevelacy/gulp-stylus) plugin
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus');
@@ -95,7 +100,7 @@ gulp.task('styles', function() {
 ```
 This looks almost exactly the same as the `scripts` task - except we `pipe` it through `gulp-stylus` (transforming it from *stylus* to *css*) before `pipe`ing it out to its destination (using `gulp.dest`).
 
-If you try to run `gulp styles` though it will fail since we haven't installed `gulp-stylus`, so lets do that now, along with a few other packages we need for our gulpfile (you can list any number of packages separated by spaces)
+If you try to run `gulp styles` though it will fail since we haven't installed `gulp-stylus`, so lets do that now, along with a few other packages we need for our gulpfile (you can list any number of packages separated by spaces for `npm install`, likewise for several other `npm` commands)
 ```sh
 npm install --save-dev gulp-stylus gulp-jade del run-sequence browser-sync
 ```
