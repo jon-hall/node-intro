@@ -56,7 +56,7 @@ gulp.task('scripts', function() {
 /* Default task ignored for now */
 ```
 Here we see another key feature of gulp - that of a [*stream*](https://nodejs.org/api/stream.html) (specifically a [vinyl-fs](https://github.com/gulpjs/vinyl-fs) stream), created using `gulp.src` which is then `pipe`d through to an output, using `gulp.dest`.
-
+> If the `**/*.js` syntax is unfamiliar to you, it's a *glob* expression and works like a simple form of regex for matching filepaths - see [here](https://github.com/isaacs/node-glob) for more info.
 
 If you now run
 ```sh
@@ -121,7 +121,7 @@ gulp.task('views', function() {
         pipe(gulp.dest('./dist'));
 });
 
-// You can specify an array of tasks for a gulp task to run
+// You can specify an array of task names for a gulp.task to run
 // In this case, 'build' runs our other three tasks
 gulp.task('build', ['scripts', 'styles', 'views']);
 
@@ -151,7 +151,7 @@ gulp.task('default', function(done) {
 ```
 
 #### Watching files during development
-The last thing we need to do is setup a development task which will watch our source files and rebuild things when needed (it'll also reload our browser for us, if need be)
+The last thing we need to do is setup a development task which will watch our source files and rebuild things when needed (it'll also reload our browser for us, using [browser-sync](http://www.browsersync.io/), when needed)
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus'),
@@ -169,7 +169,7 @@ gulp.task('dev', ['build'], function() {
         proxy: 8111
     });
 
-    // Watch all files in 'client' ending with 'jade',
+    // Watch all files in 'client' ending with '.jade',
     // and run 'views' when any of them change
     gulp.watch('./client/**/*.jade', ['views']).
         // We can also listen for 'change' and run a browser reload
@@ -268,7 +268,7 @@ Currently, the application doesn't actually do anything, so lets install some pa
 npm install --save socket.io haikunator
 ```
 
-We'll now update our app to include `socket.io`, which allows us to communicate with clients using websockets
+We'll now update our app to include [`socket.io`](http://socket.io/), which allows us to communicate with clients using websockets
 ```js
 var http = require('http'),
     path = require('path'),
