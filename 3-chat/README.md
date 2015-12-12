@@ -83,7 +83,7 @@ gulp.task('scripts', function() {
 #### Transforming files
 Gulp can be used simply for copying files, but it is more comonly used for *transforming* them in some way - concatenating, minifying, transpiling, etc. - which is done by `pipe`ing through plugins which transform the files along the way.
 
-We'll now make a task which reads `styl` files (*stylus* - a language which transpiles to *css*) and outputs plain old `css` files, by `pipe`ing through the [`gulp-stylus`](https://github.com/stevelacy/gulp-stylus) plugin
+We'll now make a task which reads `styl` files ([*stylus*](https://learnboost.github.io/stylus/) - a language which transpiles to *css*) and outputs plain old `css` files, by `pipe`ing through the [`gulp-stylus`](https://github.com/stevelacy/gulp-stylus) plugin
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus');
@@ -107,7 +107,7 @@ npm install --save-dev gulp-stylus gulp-jade del run-sequence browser-sync
 Once that completes you can test the task by running `gulp styles` which should output `main.css` to `dist/styles`.
 
 #### Views and an overall build task
-Next we'll add the task to turn our `jade` view files into regular `html`, and then we'll connect all three of our tasks into a single build task
+Next we'll add the task to turn our [`jade`](http://jade-lang.com/) view files into regular `html`, and then we'll connect all three of our tasks into a single build task
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus'),
@@ -138,7 +138,7 @@ var gulp = require('gulp'),
     del = require('del');
 
 gulp.task('clean', function() {
-    return del('./dist/**/*'));
+    return del('./dist/**/*');
 });
 
 // The default task cleans THEN builds, the array syntax used for 'build'
@@ -166,7 +166,7 @@ gulp.task('dev', ['build'], function() {
     // TODO: Launch server on 8111: "server(8111);"
     // We init browser-sync to proxy our application
     browserSync.init({
-        proxy: 8111
+        proxy: 'http://localhost:' + 8111
     });
 
     // Watch all files in 'client' ending with '.jade',
@@ -227,9 +227,11 @@ module.exports = function(port) {
     app.use(express.static(path.resolve(__dirname, '../dist')));
 };
 ```
-This example introduced another one of the few global objects in node (a previously encountered one being `require`) - `module` - which can be used for exporting content from a file (*module*) using its `exports` property.
+This example introduced another couple of the [global objects](https://nodejs.org/api/globals.html) present in node (a previously encountered one being `require`).
 
-The `exports` object is present in two forms - `module.exports` and also under the alias `exports`, which is a reference to `module.exports`.
+One was `module` - which can be used for exporting content from a file (*module*) using its `exports` property. The `exports` object is present in two forms - `module.exports` and also under the alias `exports`, which is a reference to `module.exports`.
+
+We also made use of `__dirname`, which is the absolute path to the directory *this file is in* (there is a similar variable, `__filename`, which is the absolute filename).
 
 An example of importing and exporting between files
 ```js
@@ -302,7 +304,7 @@ module.exports = function(port) {
 ```
 
 #### Making clients chat
-Communicating between sockets is made simple with the use of `socket.io`s `rooms` feature
+Communicating between clients is made simple with the use of `socket.io`'s [`rooms`](http://socket.io/docs/rooms-and-namespaces/) feature
 ```js
 var http = require('http'),
     path = require('path'),
@@ -356,7 +358,7 @@ module.exports = function(port) {
             socket.to('main').emit('out', username);
         });
     });
-});
+};
 ```
 
 #### Finishing off the gulpfile
@@ -371,7 +373,7 @@ var gulp = require('gulp'),
     server = require('./server/index');
 
 gulp.task('clean', function() {
-    return del('./dist/**/*'));
+    return del('./dist/**/*');
 });
 
 gulp.task('scripts', function() {
@@ -412,7 +414,7 @@ gulp.task('dev', ['build'], function() {
 
     // We init browser-sync to proxy our application
     browserSync.init({
-        proxy: 8111
+        proxy: 'http://localhost:' + 8111
     });
 
     // Watch all files in 'client' ending with 'jade',
@@ -440,6 +442,6 @@ Running
 ```sh
 gulp dev
 ```
-and opening [http://localhost:3000](http://localhost:3000) (*browser-sync's proxy runs on port 3000*) should give you a working chat app - open up a couple of tabs and try chatting.
+will cause `browser-sync` to open [http://localhost:3000](http://localhost:3000) (*browser-sync's proxy runs on port 3000*) in your default browser, where you should find a working chat app - open up a couple of tabs and try chatting.
 
 If you change any of the source files in `/client`, you should see they get automatically rebuilt, and your browser refreshed, as required based on what changed
