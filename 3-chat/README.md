@@ -335,7 +335,7 @@ module.exports = function(port) {
         var username = haikunate();
 
         // Log that we got a new connection
-        console.log('Client connected (pid: %d)', process.pid);
+        console.log('Client connected (username: %s)', username);
 
         // Make the connection join the 'main' room
         socket.join('main');
