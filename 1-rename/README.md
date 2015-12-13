@@ -10,7 +10,7 @@ Just to make it more awkward, there's also some files in there which we want to 
 #### Scripting with node
 We're going to use node to solve this problem, by writing a simple javascript program that will rename the files as needed.
 
-This time we have an empty `index.js` file ready, so the first thing is, once again to `require` in a module so we can start doing stuff. This time we'll bring in another built-in module - `fs` - the file system module which allows us to read and write files, along with lots of file-related stuff.
+This time we have an empty `index.js` file ready, so the first thing is, once again to `require` in a module so we can start doing stuff. This time we'll bring in another built-in module - `fs` - the [file system](https://nodejs.org/api/fs.html) module which allows us to read and write files, along with lots of other file-related stuff.
 
 ```js
 var fs = require('fs');
@@ -106,3 +106,10 @@ fs.readdir('./stuff', function(err, files) {
     console.log('Renaming files...');
 });
 ```
+
+You can now run the renamer by entering (in a cmd prompt)
+```sh
+node index.js
+```
+
+It should list the files it renames and you can checkout the `/stuff` folder to confirm (if things go wrong you can restore `/stuff` to its original state by copying the backups from `/stuff_backup`).

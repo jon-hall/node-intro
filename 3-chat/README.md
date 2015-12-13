@@ -2,19 +2,19 @@
 
 This final exercise puts several of the previous pieces together and goes back to the roots of using node as a web server while illustrating some more advanced concepts like how to use npm, and how a simple chat app can be easily put together using a library like socket.io.
 
-It also introduces a very common usage of node - that of a task runner - in the form of writing a simple gulpfile for the project, to transpile various static assets.
+It also introduces a very common usage of node - that of a task runner - in the form of writing a simple gulpfile for the project, to [transpile](https://en.wikipedia.org/wiki/Source-to-source_compiler) various static assets.
 
 #### Creating a node project from scratch
 This time around you'll be making a proper node app from scratch, the first thing to do is create an entry point for the app, so make a file called `index.js` in this folder.
 
-Now open a command prompt, in this folder, and initialise a new node project using.
+Now open a command prompt and initialise a new node project in this folder using [`npm init`](https://docs.npmjs.com/cli/init).
 ```sh
 npm init
 ```
 Take the default answer for each of the questions it asks you, and you'll find it makes you a `package.json` file in this folder, now we can start work on the gulpfile.
 
 #### Gulp and gulpfiles
-Gulp is a task runner that runs on node, you compose the build steps you need using plain javascript in a build file (known as a gulpfile) which is, by convention, called `gulpfile.js` and placed in the root directory of your project.
+Gulp is a task runner that runs on node (for more about gulp see [here](http://gulpjs.com/)), you compose the build steps you need using plain javascript in a build file (known as a gulpfile) which is, by convention, called `gulpfile.js` and placed in the root directory of your project.
 
 To start writing our gulpfile we need to do three things
  - Make a file called `gulpfile.js` in the `3-chat` directory
@@ -35,7 +35,9 @@ gulp.task('default', function() {
     console.log('Default task!');
 });
 ```
-To see it in action just run
+This introduces the important function `gulp.task`, which is used to declare tasks which can be invoked by name using the `gulp` command in a command prompt (in this case we created the special, *default* task which is invoked when you don't supply a task name to the `gulp` command).
+
+So, to see it in action, just run
 ```sh
 gulp
 ```
@@ -53,6 +55,9 @@ gulp.task('scripts', function() {
 
 /* Default task ignored for now */
 ```
+Here we see another key feature of gulp - that of a [*stream*](https://nodejs.org/api/stream.html) (specifically a [vinyl-fs](https://github.com/gulpjs/vinyl-fs) stream), created using `gulp.src` which is then `pipe`d through to an output, using `gulp.dest`.
+> If the `**/*.js` syntax is unfamiliar to you, it's a *glob* expression and works like a simple form of regex for matching filepaths - see [here](https://github.com/isaacs/node-glob) for more info.
+
 If you now run
 ```sh
 gulp scripts
@@ -76,9 +81,9 @@ gulp.task('scripts', function() {
 ```
 
 #### Transforming files
-Gulp can be used simply for copying files, but it is more comonly used for *transforming* them in some way - concatenating, minifying, transpiling, etc. - which is done using `pipe`.
+Gulp can be used simply for copying files, but it is more comonly used for *transforming* them in some way - concatenating, minifying, transpiling, etc. - which is done by `pipe`ing through plugins which transform the files along the way.
 
-We'll now make a task which reads `styl` files (*stylus* - a language which transpiles to *css*) and outputs plain old `css` files
+We'll now make a task which reads `styl` files ([*stylus*](https://learnboost.github.io/stylus/) - a language which transpiles to *css*) and outputs plain old `css` files, by `pipe`ing through the [`gulp-stylus`](https://github.com/stevelacy/gulp-stylus) plugin
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus');
@@ -95,14 +100,14 @@ gulp.task('styles', function() {
 ```
 This looks almost exactly the same as the `scripts` task - except we `pipe` it through `gulp-stylus` (transforming it from *stylus* to *css*) before `pipe`ing it out to its destination (using `gulp.dest`).
 
-If you try to run `gulp styles` though it will fail since we haven't installed `gulp-stylus`, so lets do that now, along with a few other packages we need for our gulpfile (you can list any number of packages separated by spaces)
+If you try to run `gulp styles` though it will fail since we haven't installed `gulp-stylus`, so lets do that now, along with a few other packages we need for our gulpfile (you can list any number of packages separated by spaces for `npm install`, likewise for several other `npm` commands)
 ```sh
 npm install --save-dev gulp-stylus gulp-jade del run-sequence browser-sync
 ```
 Once that completes you can test the task by running `gulp styles` which should output `main.css` to `dist/styles`.
 
 #### Views and an overall build task
-Next we'll add the task to turn our `jade` view files into regular `html`, and then we'll connect all three of our tasks into a single build task
+Next we'll add the task to turn our [`jade`](http://jade-lang.com/) view files into regular `html`, and then we'll connect all three of our tasks into a single build task
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus'),
@@ -116,7 +121,7 @@ gulp.task('views', function() {
         pipe(gulp.dest('./dist'));
 });
 
-// You can specify an array of tasks for a gulp task to run
+// You can specify an array of task names for a gulp.task to run
 // In this case, 'build' runs our other three tasks
 gulp.task('build', ['scripts', 'styles', 'views']);
 
@@ -133,7 +138,7 @@ var gulp = require('gulp'),
     del = require('del');
 
 gulp.task('clean', function() {
-    return del('./dist/**/*'));
+    return del('./dist/**/*');
 });
 
 // The default task cleans THEN builds, the array syntax used for 'build'
@@ -146,7 +151,7 @@ gulp.task('default', function(done) {
 ```
 
 #### Watching files during development
-The last thing we need to do is setup a development task which will watch our source files and rebuild things when needed (it'll also reload our browser for us, if need be)
+The last thing we need to do is setup a development task which will watch our source files and rebuild things when needed (it'll also reload our browser for us, using [browser-sync](http://www.browsersync.io/), when needed)
 ```js
 var gulp = require('gulp'),
     stylus = require('gulp-stylus'),
@@ -161,10 +166,10 @@ gulp.task('dev', ['build'], function() {
     // TODO: Launch server on 8111: "server(8111);"
     // We init browser-sync to proxy our application
     browserSync.init({
-        proxy: 8111
+        proxy: 'http://localhost:' + 8111
     });
 
-    // Watch all files in 'client' ending with 'jade',
+    // Watch all files in 'client' ending with '.jade',
     // and run 'views' when any of them change
     gulp.watch('./client/**/*.jade', ['views']).
         // We can also listen for 'change' and run a browser reload
@@ -222,8 +227,32 @@ module.exports = function(port) {
     app.use(express.static(path.resolve(__dirname, '../dist')));
 };
 ```
-> TODO: module & exports
+This example introduced another couple of the [global objects](https://nodejs.org/api/globals.html) present in node (a previously encountered one being `require`).
 
+One was `module` - which can be used for exporting content from a file (*module*) using its `exports` property. The `exports` object is present in two forms - `module.exports` and also under the alias `exports`, which is a reference to `module.exports`.
+
+We also made use of `__dirname`, which is the absolute path to the directory *this file is in* (there is a similar variable, `__filename`, which is the absolute filename).
+
+An example of importing and exporting between files
+```js
+// file1.js
+
+// Make sure we do 'exports =', else exports !== module.exports after
+// the assignment
+exports = module.exports = function() { return 'default export'; };
+
+exports.a = function() { return 'a'; };
+```
+
+```js
+// file2.js
+var f1 = require('./file1');
+
+f1(); // => default export
+f1.a(); // => a
+```
+
+##### Running the server
 If you now make another file, `index.js`, and put this in it
 ```js
 // Launch a server on port 3001
@@ -241,7 +270,7 @@ Currently, the application doesn't actually do anything, so lets install some pa
 npm install --save socket.io haikunator
 ```
 
-We'll now update our app to include `socket.io`, which allows us to communicate with clients using websockets
+We'll now update our app to include [`socket.io`](http://socket.io/), which allows us to communicate with clients using websockets
 ```js
 var http = require('http'),
     path = require('path'),
@@ -275,7 +304,7 @@ module.exports = function(port) {
 ```
 
 #### Making clients chat
-Communicating between sockets is made simple with the use of `socket.io`s `rooms` feature
+Communicating between clients is made simple with the use of `socket.io`'s [`rooms`](http://socket.io/docs/rooms-and-namespaces/) feature
 ```js
 var http = require('http'),
     path = require('path'),
@@ -306,7 +335,7 @@ module.exports = function(port) {
         var username = haikunate();
 
         // Log that we got a new connection
-        console.log('Client connected (pid: %d)', process.pid);
+        console.log('Client connected (username: %s)', username);
 
         // Make the connection join the 'main' room
         socket.join('main');
@@ -329,7 +358,7 @@ module.exports = function(port) {
             socket.to('main').emit('out', username);
         });
     });
-});
+};
 ```
 
 #### Finishing off the gulpfile
@@ -344,7 +373,7 @@ var gulp = require('gulp'),
     server = require('./server/index');
 
 gulp.task('clean', function() {
-    return del('./dist/**/*'));
+    return del('./dist/**/*');
 });
 
 gulp.task('scripts', function() {
@@ -385,7 +414,7 @@ gulp.task('dev', ['build'], function() {
 
     // We init browser-sync to proxy our application
     browserSync.init({
-        proxy: 8111
+        proxy: 'http://localhost:' + 8111
     });
 
     // Watch all files in 'client' ending with 'jade',
@@ -413,6 +442,6 @@ Running
 ```sh
 gulp dev
 ```
-and opening [http://localhost:3000](http://localhost:3000) (*browser-sync's proxy runs on port 3000*) should give you a working chat app - open up a couple of tabs and try chatting.
+will cause `browser-sync` to open [http://localhost:3000](http://localhost:3000) (*browser-sync's proxy runs on port 3000*) in your default browser, where you should find a working chat app - open up a couple of tabs and try chatting.
 
 If you change any of the source files in `/client`, you should see they get automatically rebuilt, and your browser refreshed, as required based on what changed
